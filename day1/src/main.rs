@@ -17,10 +17,9 @@ fn find_first_double_frequency(input: &str) -> i32 {
     let mut current = 0;
     let mut previously_found = HashSet::new();
     for next in inputs.cycle() {
-        if previously_found.contains(&current) {
+        if !previously_found.insert(current) {
             break;
         }
-        previously_found.insert(current);
         current += next;
     }
     current
