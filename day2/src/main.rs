@@ -11,6 +11,10 @@ fn calculate_cheksum(input: &str) -> u32 {
   let mut doubles = 0;
   let mut triples = 0;
   for line in input.lines().map(str::trim) {
+    //NOTE: Since our input is ASCII only it also would be feasable to only use
+    //      an array with the 26 possible char values as index into it. For 
+    //      ASCII input this method is much faster. With a hashmap we have a more
+    //      general solution.
     let mut chars = HashMap::new();
     for c in line.chars() {
       *chars.entry(c).or_insert(0) += 1;
@@ -26,9 +30,17 @@ fn calculate_cheksum(input: &str) -> u32 {
 }
 
 fn find_common_letters(input: &str) -> String {
+  //NOTE: Not the most performant code. We check all pairs twice and this is
+  //      generally an O(n^2) algorithm. Since the input is really small we don't
+  //      worry about it here.
   for (a, b) in iproduct!(input.lines(), input.lines()) {
     if a.chars().zip(b.chars()).filter(|(a, b)| a != b).count() == 1 {
-      return a.chars().zip(b.chars()).filter(|(a, b)| a == b).map(|(a, _)| a).collect();
+      return a
+        .chars()
+        .zip(b.chars())
+        .filter(|(a, b)| a == b)
+        .map(|(a, _)| a)
+        .collect();
     }
   }
   "".to_owned()
