@@ -25,9 +25,7 @@ fn find_common_letters(input: &str) -> String {
   for (a, b) in iproduct!(input.lines(), input.lines()) {
     if a.chars().zip(b.chars()).filter(|(a, b)| a != b).count() == 1 {
       let diff_position = a.chars().zip(b.chars()).position(|(a, b)| a != b).unwrap();
-      let mut result = a[..diff_position].to_owned();
-      result.push_str(&a[diff_position + 1..]);
-      return result;
+      return format!("{}{}", &a[..diff_position], &a[diff_position + 1..]);
     }
   }
   "".to_owned()
