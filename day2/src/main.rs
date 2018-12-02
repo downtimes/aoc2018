@@ -28,8 +28,7 @@ fn calculate_cheksum(input: &str) -> u32 {
 fn find_common_letters(input: &str) -> String {
   for (a, b) in iproduct!(input.lines(), input.lines()) {
     if a.chars().zip(b.chars()).filter(|(a, b)| a != b).count() == 1 {
-      let diff_position = a.chars().zip(b.chars()).position(|(a, b)| a != b).unwrap();
-      return format!("{}{}", &a[..diff_position], &a[diff_position + 1..]);
+      return a.chars().zip(b.chars()).filter(|(a, b)| a == b).map(|(a, _)| a).collect();
     }
   }
   "".to_owned()
