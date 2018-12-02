@@ -1,5 +1,5 @@
-use itertools::iproduct;
 use std::collections::HashMap;
+use itertools::Itertools;
 
 fn main() {
   let input = std::fs::read_to_string("input1.txt").unwrap();
@@ -30,10 +30,10 @@ fn calculate_checksum(input: &str) -> u32 {
 }
 
 fn find_common_letters(input: &str) -> String {
-  //NOTE: Not the most performant code. We check all pairs twice and this is
+  //NOTE: Not the most performant code. The used algorithm is  
   //      generally an O(n^2) algorithm. Since the input is really small we don't
   //      worry about it here.
-  for (a, b) in iproduct!(input.lines(), input.lines()) {
+  for (a, b) in input.lines().map(str::trim).tuple_combinations() {
     if a.chars().zip(b.chars()).filter(|(a, b)| a != b).count() == 1 {
       return a
         .chars()
@@ -54,7 +54,7 @@ mod test {
     let input = "abcdef\nbababc\nabbcde\nabcccd\naabcdd\nabcdee\nababab";
     let expected = 4 * 3;
 
-    assert_eq!(expected, calculate_cheksum(input));
+    assert_eq!(expected, calculate_checksum(input));
   }
 
   #[test]
