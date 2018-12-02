@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use itertools::iproduct;
+use std::collections::HashMap;
 
 fn main() {
   let input = std::fs::read_to_string("input1.txt").unwrap();
@@ -15,8 +15,12 @@ fn calculate_cheksum(input: &str) -> u32 {
     for c in line.chars() {
       *chars.entry(c).or_insert(0) += 1;
     }
-    if chars.values().any(|&count| count >= 3) { triples += 1; }
-    if chars.values().any(|&count| count == 2) { doubles += 1; }
+    if chars.values().any(|&count| count >= 3) {
+      triples += 1;
+    }
+    if chars.values().any(|&count| count == 2) {
+      doubles += 1;
+    }
   }
   doubles * triples
 }
@@ -45,7 +49,7 @@ mod test {
   #[test]
   fn test_input2() {
     let input = "abcde\nfghij\nklmno\npqrst\nfguij\naxcye\nwvxyz";
-    let expected = "fgij".to_owned(); 
+    let expected = "fgij".to_owned();
 
     assert_eq!(expected, find_common_letters(input));
   }
