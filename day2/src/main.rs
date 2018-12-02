@@ -3,11 +3,11 @@ use std::collections::HashMap;
 
 fn main() {
   let input = std::fs::read_to_string("input1.txt").unwrap();
-  println!("{}", calculate_cheksum(&input));
+  println!("{}", calculate_checksum(&input));
   println!("{}", find_common_letters(&input));
 }
 
-fn calculate_cheksum(input: &str) -> u32 {
+fn calculate_checksum(input: &str) -> u32 {
   let mut doubles = 0;
   let mut triples = 0;
   for line in input.lines().map(str::trim) {
