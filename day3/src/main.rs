@@ -1,23 +1,20 @@
 use itertools::iproduct;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::str::FromStr;
 
 fn main() {
     let input = std::fs::read_to_string("input1.txt").unwrap();
-    println!("{}", overlapping_points(&parse_claims(&input)));
-    println!("{}", non_overlapping_claim_id(&parse_claims(&input)));
-}
-
-#[derive(Debug)]
-struct Point {
-    x: u32,
-    y: u32,
+    let claims = parse_claims(&input);
+    println!("{}", overlapping_points(&claims));
+    println!("{}", non_overlapping_claim_id(&claims));
 }
 
 #[derive(Debug)]
 struct Claim {
     id: u32,
-    topleft: Point,
+    x: u32,
+    y: u32,
     width: u32,
     height: u32,
 }
@@ -28,20 +25,19 @@ fn parse_claims(input: &str) -> Vec<Claim> {
         .map(str::trim)
         .map(|line| {
             let line_items: Vec<_> = line
-                .split(|c| c == '@' || c == ':')
-                .map(str::trim)
+                .split(|c| match c {
+                    '@' | ':' | ',' | 'x' | '#' => true,
+                    _ => false,
+                }).map(str::trim)
+                .filter(|s| !s.is_empty())
+                .map(|num| u32::from_str(num).unwrap())
                 .collect();
-            let id = line_items[0][1..].parse().unwrap();
-            let mut point_stuff = line_items[1].split(',');
-            let mut extend = line_items[2].split('x');
             Claim {
-                id,
-                topleft: Point {
-                    x: point_stuff.next().unwrap().parse().unwrap(),
-                    y: point_stuff.next().unwrap().parse().unwrap(),
-                },
-                width: extend.next().unwrap().parse().unwrap(),
-                height: extend.next().unwrap().parse().unwrap(),
+                id: line_items[0],
+                x: line_items[1],
+                y: line_items[2],
+                width: line_items[3],
+                height: line_items[4],
             }
         }).collect()
 }
@@ -50,8 +46,8 @@ fn overlapping_points(claims: &[Claim]) -> u32 {
     let mut cloth_map = HashMap::new();
     for claim in claims {
         for (x, y) in iproduct!(
-            claim.topleft.x..claim.topleft.x + claim.width,
-            claim.topleft.y..claim.topleft.y + claim.height
+            claim.x..claim.x + claim.width,
+            claim.y..claim.y + claim.height
         ) {
             *cloth_map.entry((x, y)).or_insert(0) += 1;
         }
@@ -66,8 +62,8 @@ fn non_overlapping_claim_id(claims: &[Claim]) -> u32 {
     for claim in claims {
         candidates.insert(claim.id);
         for (x, y) in iproduct!(
-            claim.topleft.x..claim.topleft.x + claim.width,
-            claim.topleft.y..claim.topleft.y + claim.height
+            claim.x..claim.x + claim.width,
+            claim.y..claim.y + claim.height
         ) {
             match cloth_map.get(&(x, y)) {
                 Some(id) => {
