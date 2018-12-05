@@ -9,32 +9,27 @@ fn to_delete(a: char, b: char) -> bool {
 }
 
 fn find_shortest_reduction(input: &str) -> u32 {
-    (b'a'..=b'z').map(|c| reduce(input, Some(c as char)).len()).min().unwrap() as u32
+    (b'a'..=b'z')
+        .map(|c| reduce(input, Some(c as char)).len())
+        .min()
+        .unwrap_or_default() as u32
 }
 
 fn reduce(input: &str, skip_char: Option<char>) -> String {
-    let mut old = input.to_owned();
-    loop {
-        let new = input
-            .chars()
-            .fold(String::new(), |mut acc, c| match acc.chars().last() {
-                _ if skip_char == Some(c.to_ascii_lowercase()) => acc,
-                Some(lc) if to_delete(lc, c) => {
-                    acc.pop();
-                    acc
-                }
-                _ => {
-                    acc.push(c);
-                    acc
-                }
-            });
-        if new.len() == old.len() {
-            break;
-        } else {
-            old = new;
-        }
-    }
-    old
+    //Invariant: everything up to the current char is reduced.
+    input
+        .chars()
+        .fold(String::new(), |mut acc, c| match acc.chars().last() {
+            _ if skip_char == Some(c.to_ascii_lowercase()) => acc,
+            Some(lc) if to_delete(lc, c) => {
+                acc.pop();
+                acc
+            }
+            _ => {
+                acc.push(c);
+                acc
+            }
+        })
 }
 
 #[cfg(test)]
