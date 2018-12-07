@@ -81,8 +81,8 @@ fn safe_area_size(coordinates: Vec<Coordinate>, max_manhatten: u32) -> u32 {
         }
     }
 
-    map.iter()
-        .filter(|&&state| state == State::Collision)
+    map.into_iter()
+        .filter(|&state| state == State::Collision)
         .count() as u32
 }
 
@@ -150,38 +150,29 @@ fn largest_area(coordinates: Vec<Coordinate>) -> u32 {
     //left and right borders
     for x in [min_x, max_x].iter() {
         for y in min_y..=max_y {
-            match map[map_index(*x, y)] {
-                State::Claimed(id) => {
-                    endless.insert(id);
-                }
-                _ => {}
+            if let State::Claimed(id) = map[map_index(*x, y)] {
+                endless.insert(id);
             }
         }
     }
     //top and bottom borders
     for y in [min_y, max_y].iter() {
         for x in min_x..=max_x {
-            match map[map_index(x, *y)] {
-                State::Claimed(id) => {
-                    endless.insert(id);
-                }
-                _ => {}
+            if let State::Claimed(id) = map[map_index(x, *y)] {
+                endless.insert(id);
             }
         }
     }
     //calculate the amount for each id
     let mut count_map = HashMap::new();
     for state in map.iter() {
-        match state {
-            State::Claimed(id) => {
-                *count_map.entry(id).or_insert(0) += 1;
-            }
-            _ => {}
+        if let State::Claimed(id) = state {
+            *count_map.entry(id).or_insert(0) += 1;
         }
     }
 
-    *count_map
-        .iter()
+    count_map
+        .into_iter()
         .filter(|(id, _)| !endless.contains(id))
         .map(|(_, c)| c)
         .max()
