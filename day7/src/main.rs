@@ -4,8 +4,8 @@ use std::collections::{HashMap, HashSet};
 fn main() {
     let input = std::fs::read_to_string("input1.txt").unwrap();
     let parsed = parse_input(&input);
-    println!("{}", construction_order(&parsed));
-    println!("{}", time_required(&parsed, 5, 60));
+    println!("{}", construction_order(construct_map(&parsed)));
+    println!("{}", time_required(construct_map(&parsed), 5, 60));
 }
 
 fn parse_input(input: &str) -> Vec<(char, char)> {
@@ -21,7 +21,7 @@ fn parse_input(input: &str) -> Vec<(char, char)> {
         .collect()
 }
 
-fn construction_order(instructions: &[(char, char)]) -> String {
+fn construct_map(instructions: &[(char, char)]) -> HashMap<char, HashSet<char>> {
     let mut construction_map = HashMap::<char, HashSet<char>>::new();
     for &(before, after) in instructions {
         construction_map.entry(after).or_default().insert(before);
@@ -33,7 +33,11 @@ fn construction_order(instructions: &[(char, char)]) -> String {
             construction_map.insert(*before, HashSet::new());
         }
     }
+    construction_map
+}
 
+fn construction_order(construction_map: HashMap<char, HashSet<char>>) -> String {
+    let mut construction_map = construction_map;
     let mut result = String::new();
     while !construction_map.is_empty() {
         let candidate = construction_map
@@ -60,23 +64,19 @@ struct Worker {
     busy_time: u32,
 }
 
-fn time_required(instructions: &[(char, char)], workers: u8, time_base: u32) -> u32 {
-    let mut construction_map = HashMap::<char, HashSet<char>>::new();
-    for &(before, after) in instructions {
-        construction_map.entry(after).or_default().insert(before);
-    }
-
-    //Insert items with no dependencies into the map
-    for (before, _) in instructions {
-        if !construction_map.contains_key(before) {
-            construction_map.insert(*before, HashSet::new());
-        }
-    }
-
-    let mut workers = vec![Worker {
-        item: None,
-        busy_time: 0,
-    }; workers as usize];
+fn time_required(
+    construction_map: HashMap<char, HashSet<char>>,
+    workers: u8,
+    time_base: u32,
+) -> u32 {
+    let mut construction_map = construction_map;
+    let mut workers = vec![
+        Worker {
+            item: None,
+            busy_time: 0,
+        };
+        workers as usize
+    ];
     let mut current_second = 0;
     while !construction_map.is_empty() || workers.iter().any(|w| w.busy_time > 0) {
         //Adjust workers time and check for any items that finished
@@ -100,20 +100,21 @@ fn time_required(instructions: &[(char, char)], workers: u8, time_base: u32) -> 
             .iter()
             .filter(|(_, depends)| depends.is_empty())
             .map(|(c, _)| c)
-            .cloned().collect();
+            .cloned()
+            .collect();
         candidates.sort();
 
         for cand in candidates {
             for worker in &mut workers {
                 if worker.item == None {
                     worker.item = Some(cand);
-                    worker.busy_time = time_base + (cand as u32 - 65 + 1); 
+                    worker.busy_time = time_base + (cand as u32 - 65 + 1);
                     construction_map.remove(&cand);
                     break;
                 }
             }
         }
-        
+
         current_second += 1;
     }
     current_second - 1
@@ -134,7 +135,7 @@ Step F must be finished before step E can begin.";
         let expected = "CABDFE".to_owned();
 
         let parsed = parse_input(input);
-        assert_eq!(expected, construction_order(&parsed));
+        assert_eq!(expected, construction_order(construct_map(&parsed)));
     }
 
     #[test]
@@ -149,6 +150,6 @@ Step F must be finished before step E can begin.";
         let expected = 15;
 
         let parsed = parse_input(input);
-        assert_eq!(expected, time_required(&parsed, 2, 0));
+        assert_eq!(expected, time_required(construct_map(&parsed), 2, 0));
     }
 }
